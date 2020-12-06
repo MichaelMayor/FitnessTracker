@@ -7,7 +7,6 @@ const PORT = process.env.PORT || 8080;
 const app = express();
 
 // Middleware
-app.use(morgan("dev"));
 app.use(express.static("public")); 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
