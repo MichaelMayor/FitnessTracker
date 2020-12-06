@@ -1,44 +1,56 @@
-const API = {
-    async getLastWorkout() {
-      let res;
-      try {
-        res = await fetch("/api/workout");
-      } catch (err) {
-        console.log(err)
-      }
-      const json = await res.json();
-  
-      return json[json.length - 1];
-    },
-    async addExercise(data) {
-      const id = location.search.split("=")[1];
-  
-      const res = await fetch("/api/workout/" + id, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+const app = require("express").Router();
+const Workout = require("../models/workout.js");
+
+
+//Post route to create a new workout
+app.post("/api/workouts",({body}, res)=>{
+    console.log("Adding a New Workout")
+    Workout.create(body)
+    .then(dbWorkout => {
+        res.json(dbWorkout);
+    })
+    .catch(err => {
+        res.status(400).json(err);
+    });
+});
+
+//get fr out last workout
+app.get("/api/workouts", (req,res)=>{
+    console.log("Getting Workout")
+    Workout.find({})
+    .then(dbWorkout => {
+        res.json(dbWorkout);
+    })
+    .catch(err => {
+        res.status(400).json(err);
+    });
+});
+
+//Add an exercise by ID
+app.put("/api/workouts/:id", (req, res) => {
+    console.log("Adding an exercise")
+    Workout.findByIdAndUpdate(
+      req.params.id,
+      { $push: {exercises: req.body}},
+      { new: true}
+    )
+      .then(dbWorkout => {
+        res.json(dbWorkout);
+      })
+      .catch(err => {
+        res.status(400).json(err);
       });
-  
-      const json = await res.json();
-  
-      return json;
-    },
-    async createWorkout(data = {}) {
-      const res = await fetch("/api/workout", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" }
+  });
+
+  // Gets workouts and oputs then into graphs and charts
+  app.get("/api/workouts/range", (req, res)=>{
+      Workout.find({})
+      .then(dbWorkout => {
+          res.json(dbWorkout);
+      })
+      .catch(err => {
+          res.status(400).json(err);
       });
-  
-      const json = await res.json();
-  
-      return json;
-    },
-  
-    async getWorkoutsInRange() {
-      const res = await fetch(`/api/workouts/range`);
-      const json = await res.json();
-  
-      return json;
-    },
-  };
+  });
+
+  module.exports = app;
